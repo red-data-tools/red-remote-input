@@ -1,5 +1,7 @@
 # Red DataStock (tentative name)
 
+Forked from https://github.com/red-data-tools/red-datasets
+
 ## Description
 
 Red DataStock provides a library for downloading and caching data.
