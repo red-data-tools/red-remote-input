@@ -1,5 +1,7 @@
 # Red DataStock
 
+:alembic: This project is currently under preparation :canned_food:
+
 ## Description
 
 Red DataStock is a Ruby library designed to manage data download, cache, and extraction from specific URLs.
