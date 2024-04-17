@@ -1,6 +1,6 @@
 # Red DataStock
 
-## Overview
+## Description
 
 Red DataStock is a Ruby library designed to manage data download, cache, and extraction from specific URLs.
 Useful when you need to consistently retrieve, cache, and process data files from the Internet.
