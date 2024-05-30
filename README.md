@@ -1,6 +1,6 @@
 # Red DataStock
 
-:alembic: This project is currently under preparation :canned_food:
+:alembic: This project is currently under preparation :canned_food: The project name will be changed.
 
 ## Description
 
