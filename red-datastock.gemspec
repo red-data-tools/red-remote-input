@@ -30,7 +30,6 @@ Gem::Specification.new do |spec|
   ]
   spec.files += Dir.glob("lib/**/*.rb")
   spec.files += Dir.glob("image/*.*")
-  spec.test_files += Dir.glob("test/**/*")
 
   spec.add_runtime_dependency("rubyzip")
 
