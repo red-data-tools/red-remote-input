@@ -4,8 +4,7 @@ clean_white_space = lambda do |entry|
   entry.gsub(/(\A\n+|\n+\z)/, '') + "\n"
 end
 
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), "lib"))
-require "datastock/version"
+require_relative "lib/datastock/version"
 
 Gem::Specification.new do |spec|
   spec.name = "red-datastock"
