@@ -7,7 +7,7 @@ end
 require_relative "lib/datastock/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "red-datastock"
+  spec.name = "red-remote-input"
   spec.version = DataStock::VERSION
   spec.homepage = "https://github.com/red-data-tools/red-datastock"
   spec.authors = ["Kouhei Sutou"]
