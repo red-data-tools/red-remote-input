@@ -1,5 +1,7 @@
 # Red Remote Input
 
+[![Test](https://github.com/red-data-tools/red-remote-input/actions/workflows/test.yml/badge.svg)](https://github.com/red-data-tools/red-remote-input/actions/workflows/test.yml)
+
 Red Remote Input is a Ruby library designed to manage data download, cache, and extraction from specific URLs.
 Useful when you need to consistently retrieve, cache, and process data files from the Internet.
 
