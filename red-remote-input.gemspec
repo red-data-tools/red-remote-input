@@ -13,12 +13,8 @@ Gem::Specification.new do |spec|
   spec.authors = ["Kouhei Sutou"]
   spec.email = ["kou@clear-code.com"]
 
-  readme = File.read("README.md")
-  readme.force_encoding("UTF-8")
-  entries = readme.split(/^\#\#\s(.*)$/)
-  clean_white_space.call(entries[entries.index("Description") + 1])
-  description = clean_white_space.call(entries[entries.index("Description") + 1])
-  spec.summary, spec.description, = description.split(/\n\n+/, 3)
+  spec.summary = "A Ruby library for managing data download, cache, and extraction from URLs"
+  spec.description = "A Ruby library for managing data download, cache, and extraction from URLs"
   spec.license = "MIT"
   spec.files = [
     "README.md",
