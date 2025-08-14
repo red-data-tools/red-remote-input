@@ -1,11 +1,11 @@
-module DataStock
+module RemoteInput
   class CachePath
     def initialize(id)
       @id = id
     end
 
     def base_dir
-      Pathname(system_cache_dir).expand_path + 'red-datastock' + @id
+      Pathname(system_cache_dir).expand_path + 'red-remote-input' + @id
     end
 
     def remove

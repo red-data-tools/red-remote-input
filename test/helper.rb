@@ -3,7 +3,7 @@ require "pathname"
 require "time"
 require "tmpdir"
 
-require "datastock"
+require "remote_input"
 
 require "test-unit"
 

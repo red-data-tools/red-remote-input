@@ -1,4 +1,4 @@
-module DataStock
+module RemoteInput
   class Error < StandardError
   end
 end

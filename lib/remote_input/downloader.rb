@@ -8,7 +8,7 @@ require "pathname"
 
 require_relative "error"
 
-module DataStock
+module RemoteInput
   class Downloader
     class TooManyRedirects < Error; end
 
@@ -39,7 +39,7 @@ module DataStock
         begin
           headers = {
             "Accept-Encoding" => "identity",
-            "User-Agent" => "Red DataStock/#{VERSION}",
+            "User-Agent" => "Red Remote Input/#{VERSION}",
           }
           start = nil
           if partial_output_path.exist?

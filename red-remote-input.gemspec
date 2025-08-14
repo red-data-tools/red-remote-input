@@ -4,12 +4,12 @@ clean_white_space = lambda do |entry|
   entry.gsub(/(\A\n+|\n+\z)/, '') + "\n"
 end
 
-require_relative "lib/datastock/version"
+require_relative "lib/remote_input/version"
 
 Gem::Specification.new do |spec|
   spec.name = "red-remote-input"
-  spec.version = DataStock::VERSION
-  spec.homepage = "https://github.com/red-data-tools/red-datastock"
+  spec.version = RemoteInput::VERSION
+  spec.homepage = "https://github.com/red-data-tools/red-remote-input"
   spec.authors = ["Kouhei Sutou"]
   spec.email = ["kou@clear-code.com"]
 
