@@ -12,26 +12,20 @@ module RemoteInput
   class Downloader
     class TooManyRedirects < Error; end
 
-    def initialize(url)
-      if url.is_a?(URI::Generic)
-        url = url.dup
-      else
-        url = URI.parse(url)
-      end
-      @url = url
-      unless @url.is_a?(URI::HTTP)
-        raise ArgumentError, "download URL must be HTTP or HTTPS: <#{@url}>"
-      end
+    def initialize(url, *fallback_urls, http_method: nil, http_parameters: nil)
+      @url = normalize_url(url)
+      @fallback_urls = fallback_urls.collect { |fallback_url| normalize_url(fallback_url) }
+      @http_method = http_method
+      @http_parameters = http_parameters
     end
 
     def download(output_path, &block)
-      if output_path.exist?
-        yield_chunks(output_path, &block) if block_given?
-        return
-      end
+      return if use_cache(output_path, &block)
 
       partial_output_path = Pathname.new("#{output_path}.partial")
       synchronize(output_path, partial_output_path) do
+        return if use_cache(output_path, &block)
+
         output_path.parent.mkpath
 
         n_retries = 0
@@ -47,7 +41,7 @@ module RemoteInput
             headers["Range"] = "bytes=#{start}-"
           end
 
-          start_http(@url, headers) do |response|
+          start_http(@url, @fallback_urls, headers) do |response|
             if response.is_a?(Net::HTTPPartialContent)
               mode = "ab"
             else
@@ -87,6 +81,27 @@ module RemoteInput
       end
     end
 
+    private def normalize_url(url)
+      if url.is_a?(URI::Generic)
+        url = url.dup
+      else
+        url = URI.parse(url)
+      end
+      unless url.is_a?(URI::HTTP)
+        raise ArgumentError, "download URL must be HTTP or HTTPS: <#{url}>"
+      end
+      url
+    end
+
+    private def use_cache(output_path, &block)
+      if output_path.exist?
+        yield_chunks(output_path, &block) if block_given?
+        true
+      else
+        false
+      end
+    end
+
     private def synchronize(output_path, partial_output_path)
       begin
         Process.getpgid(Process.pid)
@@ -106,7 +121,8 @@ module RemoteInput
           rescue ArgumentError
             # The process that acquired the lock will be exited before
             # it stores its process ID.
-            valid_lock_path = (lock_path.mtime > 10)
+            elapsed_time = Time.now - lock_path.mtime
+            valid_lock_path = (elapsed_time > 10)
           else
             begin
               Process.getpgid(pid)
@@ -135,7 +151,7 @@ module RemoteInput
       end
     end
 
-    private def start_http(url, headers, limit = 10, &block)
+    private def start_http(url, fallback_urls, headers, limit = 10, &block)
       if limit == 0
         raise TooManyRedirects, "too many redirections: #{url}"
       end
@@ -145,7 +161,27 @@ module RemoteInput
       http.start do
         path = url.path
         path += "?#{url.query}" if url.query
-        request = Net::HTTP::Get.new(path, headers)
+        if @http_method == :post
+          # TODO: We may want to add @http_content_type, @http_body
+          # and so on.
+          if @http_parameters
+            body = URI.encode_www_form(@http_parameters)
+            content_type = "application/x-www-form-urlencoded"
+            headers = {"Content-Type" => content_type}.merge(headers)
+          else
+            body = ""
+          end
+          request = Net::HTTP::Post.new(path, headers)
+          request.body = body
+        else
+          request = Net::HTTP::Get.new(path, headers)
+        end
+        if url.scheme == "https" and url.host == "api.github.com"
+          gh_token = ENV["GH_TOKEN"]
+          if gh_token
+            headers = headers.merge("Authorization" => "Bearer #{gh_token}")
+          end
+        end
         http.request(request) do |response|
           case response
           when Net::HTTPSuccess, Net::HTTPPartialContent
@@ -153,8 +189,19 @@ module RemoteInput
           when Net::HTTPRedirection
             url = URI.parse(response[:location])
             $stderr.puts "Redirect to #{url}"
-            return start_http(url, headers, limit - 1, &block)
+            return start_http(url, fallback_urls, headers, limit - 1, &block)
           else
+            case response
+            when Net::HTTPForbidden, Net::HTTPNotFound
+              next_url, *rest_fallback_urls = fallback_urls
+              if next_url
+                message = "#{response.code}: #{response.message}: " +
+                          "fallback: <#{url}> -> <#{next_url}>"
+                $stderr.puts(message)
+                return start_http(next_url, rest_fallback_urls, headers, &block)
+              end
+            end
+
             message = response.code
             if response.message and not response.message.empty?
               message += ": #{response.message}"
@@ -169,7 +216,7 @@ module RemoteInput
     private def yield_chunks(path)
       path.open("rb") do |output|
         chunk_size = 1024 * 1024
-        chunk = ""
+        chunk = +""
         while output.read(chunk_size, chunk)
           yield(chunk)
         end
