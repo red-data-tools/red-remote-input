@@ -3,3 +3,5 @@
 /pkg/
 /doc/
 .yardoc
+/vendor/
+/.bundle/
