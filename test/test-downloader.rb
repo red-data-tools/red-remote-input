@@ -77,6 +77,21 @@ class DownloaderTest < Test::Unit::TestCase
       downloader.download(output_path)
       assert_equal("cached content", output_path.read)
     end
+
+    test("yield chunks when using cache") do
+      output_path = @tmp_dir + "cached_file"
+      content = "chunk1chunk2chunk3"
+      output_path.write(content)
+      
+      downloader = RemoteInput::Downloader.new("https://example.com/file")
+      
+      chunks = []
+      downloader.download(output_path) do |chunk|
+        chunks << chunk
+      end
+      
+      assert_equal(content, chunks.join)
+    end
   end
 
   sub_test_case("fallback URLs") do
