@@ -213,12 +213,11 @@ module RemoteInput
       end
     end
 
-    private def yield_chunks(path, &block)
-      return unless block_given?
-      
-      path.open("rb") do |input|
+    private def yield_chunks(path)
+      path.open("rb") do |output|
         chunk_size = 1024 * 1024
-        while chunk = input.read(chunk_size)
+        chunk = +""
+        while output.read(chunk_size, chunk)
           yield(chunk)
         end
       end
