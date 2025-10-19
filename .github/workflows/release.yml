@@ -13,7 +13,7 @@ jobs:
       - name: Extract release note
         run: |
           ruby \
-            -e 'print("## Red DataStock "); \
+            -e 'print("## Red Remote Input "); \
                 puts(ARGF.read.split(/^## /)[1]. \
                        gsub(/ {.+?}/, ""). \
                        gsub(/\[(.+?)\]\[.+?\]/) {$1})' \
