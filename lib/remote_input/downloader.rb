@@ -7,6 +7,7 @@ require "net/http"
 require "pathname"
 
 require_relative "error"
+require_relative "version"
 
 module RemoteInput
   class Downloader
