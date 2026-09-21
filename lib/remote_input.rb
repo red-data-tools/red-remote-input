@@ -19,10 +19,8 @@ class RemoteInput
     end
   end
 
-  def initialize(url, mode="r", fallback_urls: [], **http_options)
+  def initialize(url, fallback_urls: [], **http_options)
     @downloader = Downloader.new(url, *fallback_urls, **http_options)
-    validate_mode(mode)
-    @mode = mode
     @tmp_path = TmpPath.new("#{Process.pid}-#{object_id}")
     @local_file = nil
     @closed = false
@@ -48,13 +46,6 @@ class RemoteInput
     raise IOError, "closed stream" if @closed
     return @local_file if @local_file
     @downloader.download(local_path)
-    @local_file = local_path.open(@mode)
-  end
-
-  def validate_mode(mode)
-    unless ["r", "rb", File::RDONLY].include?(mode)
-      message = "mode must be \"r\", \"rb\" or File::RDONLY: #{mode.inspect}"
-      raise ArgumentError, message
-    end
+    @local_file = local_path.open
   end
 end

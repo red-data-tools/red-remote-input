@@ -1,18 +1,6 @@
 require_relative "helper"
 
 class RemoteInputTest < Test::Unit::TestCase
-  def test_valid_mode
-    input = RemoteInput.new("https://example.com/file", "rb")
-    assert_equal("rb", input.instance_variable_get(:@mode))
-  end
-
-  def test_invalid_mode
-    message = "mode must be \"r\", \"rb\" or File::RDONLY: \"wb\""
-    assert_raise(ArgumentError.new(message)) do
-      RemoteInput.new("https://example.com/file", "wb")
-    end
-  end
-
   def test_read_once
     open_input do |input|
       input.local_path.parent.mkpath
