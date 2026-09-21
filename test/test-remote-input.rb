@@ -18,6 +18,14 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
+  def test_read_with_encoding
+    open_input(encoding: "Windows-31J:UTF-8") do |input|
+      input.local_path.parent.mkpath
+      input.local_path.write("入力", encoding: "Windows-31J:UTF-8")
+      assert_equal("入力", input.read)
+    end
+  end
+
   def test_read_after_close
     open_input do |input|
       input.close
@@ -76,7 +84,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   private
 
-  def open_input(&block)
-    RemoteInput.open("https://example.com/file", &block)
+  def open_input(**options, &block)
+    RemoteInput.open("https://example.com/file", **options, &block)
   end
 end

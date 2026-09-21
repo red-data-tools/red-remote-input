@@ -19,7 +19,16 @@ class RemoteInput
     end
   end
 
-  def initialize(url, *fallback_urls, **http_options)
+  def initialize(url,
+                 *fallback_urls,
+                 encoding: nil,
+                 internal_encoding: nil,
+                 external_encoding: nil,
+                 **http_options)
+    validate_encoding(encoding, internal_encoding, external_encoding)
+    @encoding = encoding
+    @internal_encoding = internal_encoding
+    @external_encoding = external_encoding
     @downloader = Downloader.new(url, *fallback_urls, **http_options)
     @tmp_path = TmpPath.new("#{Process.pid}-#{object_id}")
     @local_file = nil
@@ -46,6 +55,16 @@ class RemoteInput
     raise IOError, "closed stream" if @closed
     return @local_file if @local_file
     @downloader.download(local_path)
-    @local_file = local_path.open
+    options = {}
+    options[:encoding] = @encoding if @encoding
+    options[:internal_encoding] = @internal_encoding if @internal_encoding
+    options[:external_encoding] = @external_encoding if @external_encoding
+    @local_file = local_path.open(**options)
+  end
+
+  def validate_encoding(encoding, internal_encoding, external_encoding)
+    encoding.to_s.split(":") {|enc| Encoding.find(enc)} if encoding
+    Encoding.find(internal_encoding) if internal_encoding
+    Encoding.find(external_encoding) if external_encoding
   end
 end
