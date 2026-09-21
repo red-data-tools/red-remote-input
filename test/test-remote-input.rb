@@ -35,49 +35,41 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
-  class WithoutCacheTest < self
-    def test_open_with_block
-      local_path = nil
+  def test_open_with_block
+    opened_input = nil
+    open_input do |input|
+      opened_input = input
+    end
+    assert_raise(IOError.new("closed stream")) do
+      opened_input.read
+    end
+  end
+
+  def test_open_with_block_raised
+    opened_input = nil
+    assert_raise(RuntimeError.new("error in block")) do
       open_input do |input|
-        input.local_path.parent.mkpath
-        input.local_path.write("12")
-        local_path = input.local_path
+        opened_input = input
+        raise "error in block"
       end
+    end
+    assert_raise(IOError.new("closed stream")) do
+      opened_input.read
+    end
+  end
+
+  data("no path",       ["/example.com/data",     "https://example.com"])
+  data("root",          ["/example.com/data",     "https://example.com/"])
+  data("file",          ["/example.com/file",     "https://example.com/file"])
+  data("query",         ["/example.com/file",     "https://example.com/file?a=b"])
+  data("directory",     ["/example.com-a/data",   "https://example.com/a/"])
+  data("nested file",   ["/example.com-a/file",   "https://example.com/a/file"])
+  data("deeply nested", ["/example.com-a-b/file", "https://example.com/a/b/file"])
+  def test_local_path(data)
+    expected, url = data
+    RemoteInput.open(url) do |input|
       assert do
-        not local_path.parent.exist?
-      end
-    end
-
-    def test_open_with_block_raised
-      local_path = nil
-      assert_raise(RuntimeError.new("error in block")) do
-        open_input do |input|
-          input.local_path.parent.mkpath
-          input.local_path.write("12")
-          local_path = input.local_path
-          raise "error in block"
-        end
-      end
-      assert do
-        not local_path.parent.exist?
-      end
-    end
-
-    def test_local_path
-      open_input do |input|
-        tmp_path = RemoteInput::TmpPath.new("#{Process.pid}-#{input.object_id}")
-        assert_equal(tmp_path.base_dir + "data", input.local_path)
-      end
-    end
-
-    def test_close_deletes_local_path
-      open_input do |input|
-        input.local_path.parent.mkpath
-        input.local_path.write("12")
-        input.close
-        assert do
-          not input.local_path.parent.exist?
-        end
+        input.local_path.to_s.end_with?(expected)
       end
     end
   end

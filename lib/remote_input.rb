@@ -1,6 +1,5 @@
 require_relative "remote_input/cache-path"
 require_relative "remote_input/downloader"
-require_relative "remote_input/tmp-path"
 require_relative "remote_input/zip-extractor"
 
 class RemoteInput
@@ -26,11 +25,12 @@ class RemoteInput
                  external_encoding: nil,
                  **http_options)
     validate_encoding(encoding, internal_encoding, external_encoding)
+    @url = URI(url)
     @encoding = encoding
     @internal_encoding = internal_encoding
     @external_encoding = external_encoding
     @downloader = Downloader.new(url, *fallback_urls, **http_options)
-    @tmp_path = TmpPath.new("#{Process.pid}-#{object_id}")
+    @cache_path = nil
     @local_file = nil
     @closed = false
   end
@@ -41,15 +41,28 @@ class RemoteInput
 
   def close
     @local_file.close if @local_file and not @local_file.closed?
-    @tmp_path.remove
     @closed = true
   end
 
   def local_path
-    @tmp_path.base_dir + "data"
+    cache_path.base_dir + File.basename(normalize_path)
   end
 
   private
+
+  def cache_path
+    return @cache_path if @cache_path
+    dirname = File.dirname(normalize_path).delete_suffix("/")
+    cache_id = "#{@url.host}#{dirname}".tr("/", "-")
+    @cache_path = CachePath.new(cache_id)
+  end
+
+  def normalize_path
+    path = @url.path
+    path = "/" if path.empty?
+    path += "data" if path.end_with?("/")
+    path
+  end
 
   def local_file
     raise IOError, "closed stream" if @closed
