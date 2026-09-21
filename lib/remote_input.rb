@@ -19,7 +19,7 @@ class RemoteInput
     end
   end
 
-  def initialize(url, fallback_urls: [], **http_options)
+  def initialize(url, *fallback_urls, **http_options)
     @downloader = Downloader.new(url, *fallback_urls, **http_options)
     @tmp_path = TmpPath.new("#{Process.pid}-#{object_id}")
     @local_file = nil
