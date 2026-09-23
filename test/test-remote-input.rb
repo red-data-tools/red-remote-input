@@ -74,6 +74,17 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
+  def test_clear_cache
+    open_input do |input|
+      input.local_path.parent.mkpath
+      input.local_path.write("1")
+      input.clear_cache
+      assert do
+        not input.local_path.parent.exist?
+      end
+    end
+  end
+
   private
 
   def open_input(**options, &block)

@@ -44,6 +44,10 @@ class RemoteInput
     @closed = true
   end
 
+  def clear_cache
+    cache_path.remove
+  end
+
   def local_path
     cache_path.base_dir + File.basename(normalize_path)
   end
