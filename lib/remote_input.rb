@@ -24,7 +24,6 @@ class RemoteInput
                  internal_encoding: nil,
                  external_encoding: nil,
                  **http_options)
-    validate_encoding(encoding, internal_encoding, external_encoding)
     @url = URI(url)
     @encoding = encoding
     @internal_encoding = internal_encoding
@@ -77,11 +76,5 @@ class RemoteInput
     options[:internal_encoding] = @internal_encoding if @internal_encoding
     options[:external_encoding] = @external_encoding if @external_encoding
     @local_file = local_path.open(**options)
-  end
-
-  def validate_encoding(encoding, internal_encoding, external_encoding)
-    encoding.to_s.split(":") {|enc| Encoding.find(enc)} if encoding
-    Encoding.find(internal_encoding) if internal_encoding
-    Encoding.find(external_encoding) if external_encoding
   end
 end
