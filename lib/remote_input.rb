@@ -61,10 +61,10 @@ class RemoteInput
   end
 
   def normalize_path
-    path = @url.path
-    path = "/" if path.empty?
-    path += "data" if path.end_with?("/")
-    path
+    url_path = @url.path
+    url_path = "/" if url_path.empty?
+    url_path += "data" if url_path.end_with?("/")
+    url_path
   end
 
   def local_file
