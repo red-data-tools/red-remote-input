@@ -49,7 +49,7 @@ class RemoteInput
 
   private
 
-  def local_path
+  def path
     cache_path.base_dir + File.basename(normalize_path)
   end
 
@@ -70,11 +70,11 @@ class RemoteInput
   def local_file
     raise IOError, "closed stream" if @closed
     return @local_file if @local_file
-    @downloader.download(local_path)
+    @downloader.download(path)
     options = {}
     options[:encoding] = @encoding if @encoding
     options[:internal_encoding] = @internal_encoding if @internal_encoding
     options[:external_encoding] = @external_encoding if @external_encoding
-    @local_file = local_path.open(**options)
+    @local_file = path.open(**options)
   end
 end
