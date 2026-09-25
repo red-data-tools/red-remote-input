@@ -65,7 +65,7 @@ class RemoteInputTest < Test::Unit::TestCase
   data("directory",     ["/example.com-a/data",   "https://example.com/a/"])
   data("nested file",   ["/example.com-a/file",   "https://example.com/a/file"])
   data("deeply nested", ["/example.com-a-b/file", "https://example.com/a/b/file"])
-  def test_local_path(data)
+  def test_path(data)
     expected, url = data
     RemoteInput.open(url) do |input|
       assert do
