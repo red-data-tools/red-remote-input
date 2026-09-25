@@ -47,11 +47,11 @@ class RemoteInput
     cache_path.remove
   end
 
+  private
+
   def local_path
     cache_path.base_dir + File.basename(normalize_path)
   end
-
-  private
 
   def cache_path
     return @cache_path if @cache_path
