@@ -59,7 +59,8 @@ class RemoteInput
     cache_id = "#{@url.host}#{dirname}"
     query = @url.query
     cache_id += "-#{query}" if query and not query.empty?
-    @cache_path = CachePath.new(cache_id.tr("^0-9A-Za-z._~=-", "-"))
+    allow_list = "0-9A-Za-z._~=-"
+    @cache_path = CachePath.new(cache_id.tr("^#{allow_list}", "-"))
   end
 
   def normalize_path
