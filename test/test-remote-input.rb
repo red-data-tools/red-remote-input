@@ -61,7 +61,7 @@ class RemoteInputTest < Test::Unit::TestCase
   data("no path",       ["/example.com/data",     "https://example.com"])
   data("root",          ["/example.com/data",     "https://example.com/"])
   data("file",          ["/example.com/file",     "https://example.com/file"])
-  data("query",         ["/example.com/file",     "https://example.com/file?a=b"])
+  data("query",         ["/example.com+a=-/file", "https://example.com/file?a=+"])
   data("directory",     ["/example.com-a/data",   "https://example.com/a/"])
   data("nested file",   ["/example.com-a/file",   "https://example.com/a/file"])
   data("deeply nested", ["/example.com-a-b/file", "https://example.com/a/b/file"])
