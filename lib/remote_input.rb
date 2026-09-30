@@ -1,3 +1,4 @@
+require_relative "remote_input/cache-entry"
 require_relative "remote_input/cache-path"
 require_relative "remote_input/downloader"
 require_relative "remote_input/zip-extractor"
@@ -24,12 +25,11 @@ class RemoteInput
                  internal_encoding: nil,
                  external_encoding: nil,
                  **http_options)
-    @url = URI(url)
     @encoding = encoding
     @internal_encoding = internal_encoding
     @external_encoding = external_encoding
     @downloader = Downloader.new(url, *fallback_urls, **http_options)
-    @cache_path = nil
+    @cache_entry = CacheEntry.from_url(url)
     @local_file = nil
     @closed = false
   end
@@ -44,34 +44,13 @@ class RemoteInput
   end
 
   def clear_cache
-    cache_path.remove
+    @cache_entry.remove
   end
 
   private
 
   def path
-    cache_path.base_dir + File.basename(normalize_path)
-  end
-
-  def cache_path
-    return @cache_path if @cache_path
-    dirname = File.dirname(normalize_path).delete_suffix("/")
-    cache_id = to_cache_id("#{@url.host}#{dirname}")
-    query = @url.query
-    cache_id += "+#{to_cache_id(query)}" if query and not query.empty?
-    @cache_path = CachePath.new(cache_id)
-  end
-
-  def to_cache_id(s)
-    allow_list = "0-9A-Za-z._~=-"
-    s.tr("^#{allow_list}", "-")
-  end
-
-  def normalize_path
-    url_path = @url.path
-    url_path = "/" if url_path.empty?
-    url_path += "data" if url_path.end_with?("/")
-    url_path
+    @cache_entry.path
   end
 
   def local_file
