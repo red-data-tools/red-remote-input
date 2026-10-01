@@ -58,6 +58,15 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
+  def test_cache_path
+    RemoteInput.open("https://example.com/file",
+                     cache_path: "example/sub-directory/data.csv") do |input|
+      assert do
+        input.send(:path).to_s.end_with?("/example/sub-directory/data.csv")
+      end
+    end
+  end
+
   def test_clear_cache
     open_input do |input|
       input.send(:path).parent.mkpath

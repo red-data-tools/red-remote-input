@@ -15,12 +15,31 @@ class CacheEntryTest < Test::Unit::TestCase
                  cache_entry)
   end
 
+  def test_from_valid_path
+    cache_path = "example/sub-directory/data.csv"
+    cache_entry = RemoteInput::CacheEntry.from_path(cache_path)
+    assert_equal(RemoteInput::CacheEntry.new("example",
+                                             "sub-directory/data.csv"),
+                 cache_entry)
+  end
+
+  data("absolute",         "/data.csv")
+  data("no cache ID",      "data.csv")
+  data("no path in cache", "example/")
+  data("root cache",       "./data.csv")
+  data("path traversal",   "../example/data.csv")
+  def test_from_invalid_path(cache_path)
+    assert_raise(ArgumentError) do
+      RemoteInput::CacheEntry.from_path(cache_path)
+    end
+  end
+
   def test_equal_same_path_different_id
     cache_entry1 = RemoteInput::CacheEntry.new("example.com/a", "file")
     cache_entry2 = RemoteInput::CacheEntry.new("example.com", "a/file")
     assert_equal([
                    true,
-                   false
+                   false,
                  ],
                  [
                    cache_entry1.path == cache_entry2.path,

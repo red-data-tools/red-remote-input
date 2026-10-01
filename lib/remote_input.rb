@@ -21,6 +21,7 @@ class RemoteInput
 
   def initialize(url,
                  *fallback_urls,
+                 cache_path: nil,
                  encoding: nil,
                  internal_encoding: nil,
                  external_encoding: nil,
@@ -29,7 +30,11 @@ class RemoteInput
     @internal_encoding = internal_encoding
     @external_encoding = external_encoding
     @downloader = Downloader.new(url, *fallback_urls, **http_options)
-    @cache_entry = CacheEntry.from_url(url)
+    if cache_path
+      @cache_entry = CacheEntry.from_path(cache_path)
+    else
+      @cache_entry = CacheEntry.from_url(url)
+    end
     @local_file = nil
     @closed = false
   end

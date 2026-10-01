@@ -16,6 +16,25 @@ class RemoteInput
         new(id, File.basename(path))
       end
 
+      def from_path(cache_path)
+        path = Pathname(cache_path)
+        if path.absolute?
+          raise ArgumentError,
+                "cache_path must be relative: #{cache_path.inspect}"
+        end
+        id, *rest_filenames = path.each_filename.to_a
+        if [id, *rest_filenames].intersect?([".", ".."])
+          raise ArgumentError,
+                "cache_path must not include '.' or '..': #{cache_path.inspect}"
+        end
+        if rest_filenames.empty?
+          raise ArgumentError,
+                "cache_path must be <cache ID>/<path in cache>: " +
+                cache_path.inspect
+        end
+        new(id, File.join(*rest_filenames))
+      end
+
       private
       def to_id(s)
         allow_list = "0-9A-Za-z._~=-"
