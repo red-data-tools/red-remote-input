@@ -31,9 +31,9 @@ class RemoteInput
     @external_encoding = external_encoding
     @downloader = Downloader.new(url, *fallback_urls, **http_options)
     if cache_path
-      @cache_entry = CacheEntry.from_path(cache_path)
+      @cache_entry = CacheEntry.new(Pathname(cache_path))
     else
-      @cache_entry = CacheEntry.from_url(url)
+      @cache_entry = CacheEntry.new(URI(url))
     end
     @local_file = nil
     @closed = false
