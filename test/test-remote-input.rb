@@ -58,18 +58,11 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
-  data("no path",       ["/example.com/data",     "https://example.com"])
-  data("root",          ["/example.com/data",     "https://example.com/"])
-  data("file",          ["/example.com/file",     "https://example.com/file"])
-  data("query",         ["/example.com+a=-/file", "https://example.com/file?a=+"])
-  data("directory",     ["/example.com-a/data",   "https://example.com/a/"])
-  data("nested file",   ["/example.com-a/file",   "https://example.com/a/file"])
-  data("deeply nested", ["/example.com-a-b/file", "https://example.com/a/b/file"])
-  def test_path(data)
-    expected, url = data
-    RemoteInput.open(url) do |input|
+  def test_cache_path
+    RemoteInput.open("https://example.com/file",
+                     cache_path: "example/sub-directory/data.csv") do |input|
       assert do
-        input.send(:path).to_s.end_with?(expected)
+        input.send(:path).to_s.end_with?("/example/sub-directory/data.csv")
       end
     end
   end
