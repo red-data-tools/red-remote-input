@@ -1,6 +1,16 @@
 require_relative "helper"
 
 class RemoteInputTest < Test::Unit::TestCase
+  include Helper::Sandbox
+
+  def setup
+    setup_sandbox
+  end
+
+  def teardown
+    teardown_sandbox
+  end
+
   def test_read_once
     open_input do |input|
       input.send(:path).parent.mkpath
@@ -68,7 +78,8 @@ class RemoteInputTest < Test::Unit::TestCase
   end
 
   def test_clear_cache
-    open_input do |input|
+    RemoteInput.open("https://example.com/file",
+                     cache_path: "red-remote-input-test/file") do |input|
       input.send(:path).parent.mkpath
       input.send(:path).write("1")
       input.clear_cache
@@ -81,12 +92,15 @@ class RemoteInputTest < Test::Unit::TestCase
   private
 
   def open_input(**options)
+    sandbox_path = @tmp_dir + "example.com/file"
     input = RemoteInput.open("https://example.com/file", **options)
+    input.define_singleton_method(:path) do
+      sandbox_path
+    end
     begin
       yield(input)
     ensure
       input.close
-      input.clear_cache
     end
   end
 end
