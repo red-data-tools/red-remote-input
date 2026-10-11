@@ -78,8 +78,7 @@ class RemoteInputTest < Test::Unit::TestCase
   end
 
   def test_clear_cache
-    RemoteInput.open("https://example.com/file",
-                     cache_path: "red-remote-input-test/file") do |input|
+    open_input do |input|
       input.send(:path).parent.mkpath
       input.send(:path).write("1")
       input.clear_cache
@@ -92,10 +91,12 @@ class RemoteInputTest < Test::Unit::TestCase
   private
 
   def open_input(**options)
-    sandbox_path = @tmp_dir + "example.com/file"
     input = RemoteInput.open("https://example.com/file", **options)
-    input.define_singleton_method(:path) do
-      sandbox_path
+    cache_entry = input.instance_variable_get(:@cache_entry)
+    cache_path = cache_entry.instance_variable_get(:@cache_path)
+    sandbox_dir = @tmp_dir
+    cache_path.define_singleton_method(:system_cache_dir) do
+      sandbox_dir
     end
     begin
       yield(input)
