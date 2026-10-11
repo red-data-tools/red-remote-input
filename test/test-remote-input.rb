@@ -5,10 +5,14 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def setup
     setup_sandbox
-  end
-
-  def teardown
-    teardown_sandbox
+    cache_dir = ENV["RED_REMOTE_INPUT_CACHE_DIR"]
+    ENV["RED_REMOTE_INPUT_CACHE_DIR"] = @tmp_dir.to_s
+    begin
+      yield
+    ensure
+      ENV["RED_REMOTE_INPUT_CACHE_DIR"] = cache_dir
+      teardown_sandbox
+    end
   end
 
   def test_read_once
@@ -69,11 +73,9 @@ class RemoteInputTest < Test::Unit::TestCase
   end
 
   def test_cache_path
-    RemoteInput.open("https://example.com/file",
-                     cache_path: "example/sub-directory/data.csv") do |input|
-      assert do
-        input.send(:path).to_s.end_with?("/example/sub-directory/data.csv")
-      end
+    open_input(cache_path: "example/sub-directory/data.csv") do |input|
+      assert_equal(@tmp_dir + "red-remote-input/example/sub-directory/data.csv",
+                   input.send(:path))
     end
   end
 
@@ -92,12 +94,6 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def open_input(**options)
     input = RemoteInput.open("https://example.com/file", **options)
-    cache_entry = input.instance_variable_get(:@cache_entry)
-    cache_path = cache_entry.instance_variable_get(:@cache_path)
-    sandbox_dir = @tmp_dir
-    cache_path.define_singleton_method(:system_cache_dir) do
-      sandbox_dir
-    end
     begin
       yield(input)
     ensure

@@ -15,6 +15,8 @@ class RemoteInput
     private
 
     def system_cache_dir
+      cache_dir = ENV["RED_REMOTE_INPUT_CACHE_DIR"]
+      return cache_dir if cache_dir
       case RUBY_PLATFORM
       when /mswin/, /mingw/
         ENV['LOCALAPPDATA'] || '~/AppData/Local'
