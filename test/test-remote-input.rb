@@ -92,12 +92,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   private
 
-  def open_input(**options)
-    input = RemoteInput.open("https://example.com/file", **options)
-    begin
-      yield(input)
-    ensure
-      input.close
-    end
+  def open_input(**options, &block)
+    RemoteInput.open("https://example.com/file", **options, &block)
   end
 end
