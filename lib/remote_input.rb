@@ -43,6 +43,11 @@ class RemoteInput
     local_file.read(maxlen, out_string)
   end
 
+  def each_chunk(&block)
+    return to_enum(__method__) unless block_given?
+    download(&block)
+  end
+
   def close
     @local_file.close if @local_file and not @local_file.closed?
     @closed = true
@@ -58,10 +63,14 @@ class RemoteInput
     @cache_entry.path
   end
 
-  def local_file
+  def download(&block)
     raise IOError, "closed stream" if @closed
+    @downloader.download(path, &block)
+  end
+
+  def local_file
     return @local_file if @local_file
-    @downloader.download(path)
+    download
     options = {}
     options[:encoding] = @encoding if @encoding
     options[:internal_encoding] = @internal_encoding if @internal_encoding

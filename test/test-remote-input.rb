@@ -49,6 +49,38 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
+  def test_read_after_read_and_close
+    open_input do |input|
+      input.send(:path).parent.mkpath
+      input.send(:path).write("12")
+      input.read
+      input.close
+      assert_raise(IOError.new("closed stream")) do
+        input.read
+      end
+    end
+  end
+
+  def test_each_chunk
+    open_input do |input|
+      expected_chunks = ["1" * (1024 * 1024), "2"]
+      input.send(:path).parent.mkpath
+      input.send(:path).write(expected_chunks.join)
+      input.each_chunk do |chunk|
+        assert_equal(expected_chunks.shift, chunk)
+      end
+      assert_empty(expected_chunks)
+    end
+  end
+
+  def test_each_chunk_without_block
+    open_input do |input|
+      input.send(:path).parent.mkpath
+      input.send(:path).write("12")
+      assert_equal("12", input.each_chunk.first)
+    end
+  end
+
   def test_open_with_block
     opened_input = nil
     open_input do |input|
