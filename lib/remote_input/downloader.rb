@@ -31,6 +31,7 @@ class RemoteInput
 
         n_retries = 0
         n_max_retries = 5
+        size_yielded = 0
         begin
           headers = {
             "Accept-Encoding" => "identity",
@@ -58,15 +59,26 @@ class RemoteInput
               size_max += start
               if block_given? and n_retries.zero?
                 yield_chunks(partial_output_path, &block)
+                size_yielded = size_current
               end
             end
             progress_reporter = ProgressReporter.new(base_name, size_max)
             partial_output_path.open(mode) do |output|
               response.read_body do |chunk|
+                size_previous = size_current
                 size_current += chunk.bytesize
                 progress_reporter.report(size_current)
                 output.write(chunk)
-                yield(chunk) if block_given?
+                next unless block_given?
+                # We can't yield all chunks. The server may ignore
+                # Range: on retry and send already yielded data again.
+                next if size_current <= size_yielded
+                if size_previous < size_yielded
+                  n_yielded_bytes = size_yielded - size_previous
+                  chunk = chunk.byteslice(n_yielded_bytes..)
+                end
+                yield(chunk)
+                size_yielded = size_current
               end
             end
           end
