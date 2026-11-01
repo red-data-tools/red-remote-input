@@ -79,6 +79,43 @@ class DownloaderTest < Test::Unit::TestCase
       downloader.download(output_path)
       assert_equal("cached content", output_path.read)
     end
+
+    sub_test_case("retry on timeout") do
+      class FakeResponse < Net::HTTPOK
+        def initialize(chunks, timeout_after: nil)
+          super("1.1", "200", "OK")
+          @chunks = chunks
+          @timeout_after = timeout_after
+          self.content_length = chunks.sum(&:bytesize)
+        end
+
+        def read_body
+          @chunks.each_with_index do |chunk, i|
+            raise Net::ReadTimeout if @timeout_after == i
+            yield(chunk)
+          end
+        end
+      end
+
+      data("same chunks", ["a", "b", "c"])
+      data("overlapping chunks", ["ab", "c"])
+      test("without Range: support") do |chunks_on_retry|
+        output_path = @tmp_dir + "file"
+        downloader = RemoteInput::Downloader.new("https://example.com/file")
+        responses = [
+          FakeResponse.new(["a", "b", "c"], timeout_after: 1),
+          FakeResponse.new(chunks_on_retry),
+        ]
+        downloader.define_singleton_method(:start_http) do |url, fallback_urls, headers, &block|
+          block.call(responses.shift)
+        end
+        yielded = +""
+        capture_output do
+          downloader.download(output_path) {|chunk| yielded << chunk}
+        end
+        assert_equal(["abc", "abc"], [output_path.read, yielded])
+      end
+    end
   end
 
   sub_test_case("fallback URLs") do
