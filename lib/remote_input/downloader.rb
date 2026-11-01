@@ -57,7 +57,7 @@ class RemoteInput
             if start
               size_current += start
               size_max += start
-              if block_given? and n_retries.zero?
+              if block_given? and size_yielded < start
                 yield_chunks(partial_output_path, &block)
                 size_yielded = size_current
               end
