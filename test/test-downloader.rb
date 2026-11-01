@@ -97,6 +97,18 @@ class DownloaderTest < Test::Unit::TestCase
         end
       end
 
+      class FakePartialResponse < Net::HTTPPartialContent
+        def initialize(chunks)
+          super("1.1", "206", "Partial Content")
+          @chunks = chunks
+          self.content_length = chunks.sum(&:bytesize)
+        end
+
+        def read_body(&block)
+          @chunks.each(&block)
+        end
+      end
+
       data("same chunks", ["a", "b", "c"])
       data("overlapping chunks", ["ab", "c"])
       test("without Range: support") do |chunks_on_retry|
@@ -114,6 +126,23 @@ class DownloaderTest < Test::Unit::TestCase
           downloader.download(output_path) {|chunk| yielded << chunk}
         end
         assert_equal(["abc", "abc"], [output_path.read, yielded])
+      end
+
+      test("partially downloaded and timeout before response") do
+        output_path = @tmp_dir + "file"
+        Pathname("#{output_path}.partial").write("a")
+        downloader = RemoteInput::Downloader.new("https://example.com/file")
+        n_requests = 0
+        downloader.define_singleton_method(:start_http) do |url, fallback_urls, headers, &block|
+          n_requests += 1
+          raise Net::ReadTimeout if n_requests == 1
+          block.call(FakePartialResponse.new(["b"]))
+        end
+        yielded = +""
+        capture_output do
+          downloader.download(output_path) {|chunk| yielded << chunk}
+        end
+        assert_equal(["ab", "ab"], [output_path.read, yielded])
       end
     end
   end
