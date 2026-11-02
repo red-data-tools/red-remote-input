@@ -57,24 +57,28 @@ class RemoteInput
     @cache_entry.remove
   end
 
+  def path
+    download
+    local_path.to_s
+  end
+
   private
 
-  def path
+  def local_path
     @cache_entry.path
   end
 
   def download(&block)
     raise IOError, "closed stream" if @closed
-    @downloader.download(path, &block)
+    @downloader.download(local_path, &block)
   end
 
   def local_file
     return @local_file if @local_file
-    download
     options = {}
     options[:encoding] = @encoding if @encoding
     options[:internal_encoding] = @internal_encoding if @internal_encoding
     options[:external_encoding] = @external_encoding if @external_encoding
-    @local_file = path.open(**options)
+    @local_file = File.open(path, **options)
   end
 end
