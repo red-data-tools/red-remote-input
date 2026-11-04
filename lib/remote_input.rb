@@ -59,18 +59,18 @@ class RemoteInput
 
   def path
     download
-    local_path.to_s
+    cache_path.to_s
   end
 
   private
 
-  def local_path
+  def cache_path
     @cache_entry.path
   end
 
   def download(&block)
     raise IOError, "closed stream" if @closed
-    @downloader.download(local_path, &block)
+    @downloader.download(cache_path, &block)
   end
 
   def local_file
