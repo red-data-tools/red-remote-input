@@ -154,6 +154,15 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
+  def test_to_path
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("12")
+      assert_equal((@tmp_dir + "red-remote-input/example.com/file").to_s,
+                   input.to_path)
+    end
+  end
+
   def test_open_with_block
     opened_input = nil
     open_input do |input|

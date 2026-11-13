@@ -65,6 +65,7 @@ class RemoteInput
     download
     cache_path.to_s
   end
+  alias_method :to_path, :path
 
   private
 
