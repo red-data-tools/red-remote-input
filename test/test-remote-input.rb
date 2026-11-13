@@ -61,6 +61,56 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
+  def test_gets
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1\n2\n")
+      assert_equal(["1\n", "2\n", nil],
+                   [input.gets, input.gets, input.gets])
+    end
+  end
+
+  def test_gets_with_separator
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1,2")
+      assert_equal("1,", input.gets(","))
+    end
+  end
+
+  def test_gets_with_limit
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("12")
+      assert_equal("1", input.gets(1))
+    end
+  end
+
+  def test_gets_with_separator_and_limit
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("123,")
+      assert_equal("12", input.gets(",", 2))
+    end
+  end
+
+  def test_gets_with_chomp
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1\n2\n")
+      assert_equal("1", input.gets(chomp: true))
+    end
+  end
+
+  def test_gets_after_close
+    open_input do |input|
+      input.close
+      assert_raise(IOError.new("closed stream")) do
+        input.gets
+      end
+    end
+  end
+
   def test_each_chunk
     open_input do |input|
       expected_chunks = ["1" * (1024 * 1024), "2"]
