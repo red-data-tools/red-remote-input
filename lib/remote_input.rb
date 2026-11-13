@@ -43,6 +43,10 @@ class RemoteInput
     local_file.read(maxlen, out_string)
   end
 
+  def gets(...)
+    local_file.gets(...)
+  end
+
   def each_chunk(&block)
     return to_enum(__method__) unless block_given?
     download(&block)
