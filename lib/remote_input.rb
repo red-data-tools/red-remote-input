@@ -47,6 +47,12 @@ class RemoteInput
     local_file.gets(...)
   end
 
+  def each_line(...)
+    return to_enum(__method__, ...) unless block_given?
+    local_file.each_line(...)
+    self
+  end
+
   def each_chunk(&block)
     return to_enum(__method__) unless block_given?
     download(&block)
