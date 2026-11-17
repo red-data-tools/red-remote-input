@@ -47,6 +47,10 @@ class RemoteInput
     local_file.gets(...)
   end
 
+  def readline(...)
+    local_file.readline(...)
+  end
+
   def each_line(...)
     return to_enum(__method__, ...) unless block_given?
     local_file.each_line(...)
