@@ -111,6 +111,58 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
+  def test_readline
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1\n2\n")
+      assert_equal(["1\n", "2\n"],
+                   [input.readline, input.readline])
+    end
+  end
+
+  def test_readline_with_separator
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1,2")
+      assert_equal("1,", input.readline(","))
+    end
+  end
+
+  def test_readline_with_limit
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("12")
+      assert_equal("1", input.readline(1))
+    end
+  end
+
+  def test_readline_with_separator_and_limit
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("123,")
+      assert_equal("12", input.readline(",", 2))
+    end
+  end
+
+  def test_readline_with_chomp
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1\n2\n")
+      assert_equal("1", input.readline(chomp: true))
+    end
+  end
+
+  def test_readline_at_eof
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1\n")
+      input.readline
+      assert_raise(EOFError.new("end of file reached")) do
+        input.readline
+      end
+    end
+  end
+
   def test_each_line
     open_input do |input|
       input.send(:cache_path).parent.mkpath
