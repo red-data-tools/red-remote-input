@@ -111,6 +111,42 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
+  def test_each_line
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1\n2\n")
+      assert_equal(["1\n", "2\n"],
+                   input.each_line.to_a)
+    end
+  end
+
+  def test_each_line_with_nil_separator
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1\n2\n")
+      assert_equal(["1\n2\n"],
+                   input.each_line(nil).to_a)
+    end
+  end
+
+  def test_each_line_with_chomp
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1\n2\n")
+      assert_equal(["1", "2"],
+                   input.each_line(chomp: true).to_a)
+    end
+  end
+
+  def test_each_line_return_self
+    open_input do |input|
+      input.send(:cache_path).parent.mkpath
+      input.send(:cache_path).write("1\n2\n")
+      assert_same(input,
+                  input.each_line {})
+    end
+  end
+
   def test_each_chunk
     open_input do |input|
       expected_chunks = ["1" * (1024 * 1024), "2"]
