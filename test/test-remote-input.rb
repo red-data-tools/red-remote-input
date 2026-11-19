@@ -17,16 +17,14 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_read_once
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("12")
+      write_cache(input, "12")
       assert_equal("12", input.read)
     end
   end
 
   def test_read_twice
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("12")
+      write_cache(input, "12")
       assert_equal("1", input.read(1))
       assert_equal("2", input.read(1))
     end
@@ -34,8 +32,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_read_with_encoding
     open_input(encoding: "Windows-31J:UTF-8") do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("入力", encoding: "Windows-31J:UTF-8")
+      write_cache(input, "入力", encoding: "Windows-31J:UTF-8")
       assert_equal("入力", input.read)
     end
   end
@@ -51,8 +48,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_read_after_read_and_close
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("12")
+      write_cache(input, "12")
       input.read
       input.close
       assert_raise(IOError.new("closed stream")) do
@@ -63,8 +59,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_gets
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1\n2\n")
+      write_cache(input, "1\n2\n")
       assert_equal(["1\n", "2\n", nil],
                    [input.gets, input.gets, input.gets])
     end
@@ -72,32 +67,28 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_gets_with_separator
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1,2")
+      write_cache(input, "1,2")
       assert_equal("1,", input.gets(","))
     end
   end
 
   def test_gets_with_limit
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("12")
+      write_cache(input, "12")
       assert_equal("1", input.gets(1))
     end
   end
 
   def test_gets_with_separator_and_limit
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("123,")
+      write_cache(input, "123,")
       assert_equal("12", input.gets(",", 2))
     end
   end
 
   def test_gets_with_chomp
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1\n2\n")
+      write_cache(input, "1\n2\n")
       assert_equal("1", input.gets(chomp: true))
     end
   end
@@ -113,8 +104,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_readline
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1\n2\n")
+      write_cache(input, "1\n2\n")
       assert_equal(["1\n", "2\n"],
                    [input.readline, input.readline])
     end
@@ -122,40 +112,35 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_readline_with_separator
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1,2")
+      write_cache(input, "1,2")
       assert_equal("1,", input.readline(","))
     end
   end
 
   def test_readline_with_limit
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("12")
+      write_cache(input, "12")
       assert_equal("1", input.readline(1))
     end
   end
 
   def test_readline_with_separator_and_limit
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("123,")
+      write_cache(input, "123,")
       assert_equal("12", input.readline(",", 2))
     end
   end
 
   def test_readline_with_chomp
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1\n2\n")
+      write_cache(input, "1\n2\n")
       assert_equal("1", input.readline(chomp: true))
     end
   end
 
   def test_readline_at_eof
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1\n")
+      write_cache(input, "1\n")
       input.readline
       assert_raise(EOFError.new("end of file reached")) do
         input.readline
@@ -165,8 +150,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_each_line
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1\n2\n")
+      write_cache(input, "1\n2\n")
       assert_equal(["1\n", "2\n"],
                    input.each_line.to_a)
     end
@@ -174,8 +158,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_each_line_with_nil_separator
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1\n2\n")
+      write_cache(input, "1\n2\n")
       assert_equal(["1\n2\n"],
                    input.each_line(nil).to_a)
     end
@@ -183,8 +166,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_each_line_with_chomp
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1\n2\n")
+      write_cache(input, "1\n2\n")
       assert_equal(["1", "2"],
                    input.each_line(chomp: true).to_a)
     end
@@ -192,8 +174,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_each_line_return_self
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1\n2\n")
+      write_cache(input, "1\n2\n")
       assert_same(input,
                   input.each_line {})
     end
@@ -202,8 +183,7 @@ class RemoteInputTest < Test::Unit::TestCase
   def test_each_chunk
     open_input do |input|
       expected_chunks = ["1" * (1024 * 1024), "2"]
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write(expected_chunks.join)
+      write_cache(input, expected_chunks.join)
       input.each_chunk do |chunk|
         assert_equal(expected_chunks.shift, chunk)
       end
@@ -213,16 +193,14 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_each_chunk_without_block
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("12")
+      write_cache(input, "12")
       assert_equal("12", input.each_chunk.first)
     end
   end
 
   def test_path
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("12")
+      write_cache(input, "12")
       assert_equal((@tmp_dir + "red-remote-input/example.com/file").to_s,
                    input.path)
     end
@@ -244,8 +222,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_to_path
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("12")
+      write_cache(input, "12")
       assert_equal((@tmp_dir + "red-remote-input/example.com/file").to_s,
                    input.to_path)
     end
@@ -283,8 +260,7 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def test_clear_cache
     open_input do |input|
-      input.send(:cache_path).parent.mkpath
-      input.send(:cache_path).write("1")
+      write_cache(input, "1")
       input.clear_cache
       assert do
         not input.send(:cache_path).parent.exist?
@@ -296,5 +272,11 @@ class RemoteInputTest < Test::Unit::TestCase
 
   def open_input(**options, &block)
     RemoteInput.open("https://example.com/file", **options, &block)
+  end
+
+  def write_cache(input, data, **options)
+    cache_path = input.send(:cache_path)
+    cache_path.parent.mkpath
+    cache_path.write(data, **options)
   end
 end
