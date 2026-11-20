@@ -180,6 +180,25 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
+  def test_eof_before_read
+    open_input do |input|
+      write_cache(input, "1\n")
+      assert do
+        not input.eof?
+      end
+    end
+  end
+
+  def test_eof_after_read
+    open_input do |input|
+      write_cache(input, "1\n")
+      input.read
+      assert do
+        input.eof?
+      end
+    end
+  end
+
   def test_each_chunk
     open_input do |input|
       expected_chunks = ["1" * (1024 * 1024), "2"]
