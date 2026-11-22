@@ -199,6 +199,23 @@ class RemoteInputTest < Test::Unit::TestCase
     end
   end
 
+  def test_seek
+    open_input do |input|
+      write_cache(input, "12")
+      input.seek(1)
+      assert_equal("2", input.read)
+    end
+  end
+
+  def test_seek_with_whence
+    open_input do |input|
+      write_cache(input, "12")
+      input.read
+      input.seek(-1, IO::SEEK_CUR)
+      assert_equal("2", input.read)
+    end
+  end
+
   def test_each_chunk
     open_input do |input|
       expected_chunks = ["1" * (1024 * 1024), "2"]
