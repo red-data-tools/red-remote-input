@@ -61,6 +61,10 @@ class RemoteInput
     local_file.eof?
   end
 
+  def seek(...)
+    local_file.seek(...)
+  end
+
   def each_chunk(&block)
     return to_enum(__method__) unless block_given?
     download(&block)
